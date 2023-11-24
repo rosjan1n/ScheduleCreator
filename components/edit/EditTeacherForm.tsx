@@ -77,7 +77,7 @@ const EditTeacherForm: FC<Props> = ({ teacher }) => {
       toast({
         description: "Nauczyciel został edytowany.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=teachers");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
@@ -129,7 +129,56 @@ const EditTeacherForm: FC<Props> = ({ teacher }) => {
               )}
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant={"destructive"}
+              onClick={() => {
+                // delete confirmation
+                if (
+                  confirm(
+                    "Czy na pewno chcesz usunąć nauczyciela?\nSpowoduje to usunięcie wszystkich lekcji tego nauczyciela oraz przypisaną klasę."
+                  )
+                ) {
+                  axios
+                    .delete(`/api/teacher`, {
+                      data: { id: teacher.id },
+                    })
+                    .then(() => {
+                      toast({
+                        title: "Sukces!",
+                        description: "Pomyślnie usunięto nauczyciela.",
+                        variant: "default",
+                      });
+                      router.push("/dashboard?tab=teachers");
+                      startTransition(() => {
+                        router.refresh();
+                      });
+                    })
+                    .catch((err) => {
+                      if (err instanceof AxiosError) {
+                        if (err.response?.data.error === "TeacherNotFound") {
+                          return toast({
+                            title: "Nie można usunąć nauczyciela.",
+                            description:
+                              "Nauczyciel którego chcesz usunąć, nie istnieje.",
+                            variant: "destructive",
+                          });
+                        }
+                      }
+
+                      return toast({
+                        title: "Coś poszło nie tak.",
+                        description:
+                          "Wystąpił błąd podczas usuwania nauczyciela. Spróbuj ponownie później.",
+                        variant: "destructive",
+                      });
+                    });
+                }
+              }}
+            >
+              Usuń nauczyciela
+            </Button>
             <Button type="submit" isLoading={isLoading}>
               Zapisz zmiany
             </Button>

@@ -55,7 +55,7 @@ const CreateRoom = () => {
       toast({
         description: "Sala została stworzona.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=rooms");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
@@ -72,18 +72,18 @@ const CreateRoom = () => {
           onSubmit={form.handleSubmit((data) => createRoom(data))}
           className="flex flex-col gap-2"
         >
-          <div className="flex flex-col xl:flex-row gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="sm:w-[400px]">
+                <FormItem>
                   <FormLabel>Nazwa sali</FormLabel>
                   <FormControl>
                     <Input size={32} placeholder="Nazwa" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź nazwę sali. Nazwa sali nie może się powtarzać.
+                    Wprowadź nazwę sali, np. 23, 2B, itd.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -93,7 +93,7 @@ const CreateRoom = () => {
               control={form.control}
               name="capacity"
               render={({ field }) => (
-                <FormItem className="sm:w-[400px]">
+                <FormItem>
                   <FormLabel>Pojemność sali</FormLabel>
                   <FormControl>
                     <Input
@@ -104,7 +104,7 @@ const CreateRoom = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź ilość krzesełek w sali (1 krzesło = 1 osoba).
+                    Wprowadź pojemność sali, np. 30, 25, itd.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

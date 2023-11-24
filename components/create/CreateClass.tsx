@@ -41,19 +41,19 @@ const CreateClass: FC<Props> = ({ teachers }) => {
     resolver: zodResolver(classValidator),
   });
 
-  const [splitGroups, setGroups] = useState(false);
-
   const { mutate: createClass, isLoading } = useMutation({
     mutationFn: async ({
       name,
       amountOfStudents,
       mainTeacherId,
+      splitGroups,
       groups,
     }: formData) => {
       const payload: formData = {
         name,
         amountOfStudents,
         mainTeacherId,
+        splitGroups,
         groups,
       };
 
@@ -88,7 +88,7 @@ const CreateClass: FC<Props> = ({ teachers }) => {
       toast({
         description: "Klasa została stworzona.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=classes");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
@@ -115,7 +115,7 @@ const CreateClass: FC<Props> = ({ teachers }) => {
                     <Input placeholder="Nazwa" size={32} {...field} />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź nazwę klasy. Nazwa musi być unikalna.
+                    Wprowadź nazwę klasy, np. 1A, 2TPI, itd.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -136,7 +136,7 @@ const CreateClass: FC<Props> = ({ teachers }) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź ilość uczniów klasy.
+                    Wprowadź ilość uczniów w klasie.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -165,30 +165,41 @@ const CreateClass: FC<Props> = ({ teachers }) => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>Wybierz wychowawce klasy.</FormDescription>
+                  <FormDescription>
+                    Wybierz wychowawcę dla klasy.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Podzielić klasę na 2 grupy?
-              </label>
-              <Select
-                onValueChange={(selectedValue) =>
-                  setGroups(selectedValue === "true")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Wybierz tak/nie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Tak</SelectItem>
-                  <SelectItem value="false">Nie</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {splitGroups &&
+            <FormField
+              control={form.control}
+              name="splitGroups"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Podziel na grupy</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => {
+                        field.onChange(!field.value);
+
+                        const isChecked = e.target.checked;
+                        isChecked === false
+                          ? form.resetField("groups.0.amountOfStudents")
+                          : null;
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Zaznacz, jeśli chcesz podzielić klasę na dwie grupy.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch().splitGroups === true &&
               Array.from({ length: 2 }, (_, i) => (
                 <FormField
                   key={i}
@@ -196,17 +207,17 @@ const CreateClass: FC<Props> = ({ teachers }) => {
                   name={`groups.${i}.amountOfStudents`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ilość uczniów grupy {i + 1}</FormLabel>
+                      <FormLabel>Grupa {i + 1}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ilość"
+                          placeholder="Grupa"
                           type="number"
                           size={32}
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Wprowadź ilość uczniów grupy.
+                        Wprowadź ilość uczniów grupy {i + 1}.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

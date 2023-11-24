@@ -12,7 +12,7 @@ import {
 } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createSubjectValidator } from "@/lib/validators/basic";
+import { subjectValidator } from "@/lib/validators/basic";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { Subject } from "@prisma/client";
@@ -26,14 +26,14 @@ interface Props {
   subject: Subject;
 }
 
-type FormData = z.infer<typeof createSubjectValidator> & {
+type FormData = z.infer<typeof subjectValidator> & {
   id: string;
 };
 
 const EditSubjectForm: FC<Props> = ({ subject }) => {
   const router = useRouter();
   const form = useForm<FormData>({
-    resolver: zodResolver(createSubjectValidator),
+    resolver: zodResolver(subjectValidator),
     defaultValues: {
       name: subject.name || undefined,
     },
@@ -49,31 +49,36 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
-        if (err.response?.data.teacherExist) {
-          form.setError("name", {
+        if (err.response?.data.error === "SubjectAlreadyExists") {
+          return form.setError("name", {
             message: "Przedmiot o takiej nazwie już istnieje.",
           });
-          return;
-        } else if (err.response?.status === 400) {
+        } else if (err.response?.data.error === "NoChangesDetected") {
           return toast({
             title: "Brak zmian.",
             description: "Niewykryto zmian. Przedmiot nie został edytowany.",
           });
+        } else if (err.response?.data.error === "SubjectNotFound") {
+          return toast({
+            title: "Przedmiot nie istnieje.",
+            description: "Przedmiot, który próbujesz edytować nie istnieje.",
+            variant: "destructive",
+          });
         }
-      }
 
-      return toast({
-        title: "Coś poszło nie tak.",
-        description:
-          "Wystąpił błąd podczas edycji przedmiotu. Spróbuj ponownie później.",
-        variant: "destructive",
-      });
+        return toast({
+          title: "Coś poszło nie tak.",
+          description:
+            "Wystąpił błąd podczas edycji przedmiotu. Spróbuj ponownie później.",
+          variant: "destructive",
+        });
+      }
     },
     onSuccess: () => {
       toast({
         description: "Przedmiot został edytowany.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=subjects");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
         // losing client-side browser or React state.
@@ -87,9 +92,7 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((data) => {
-            data.id = subject.id;
-
-            editSubject(data);
+            editSubject({ ...data, id: subject.id });
           })}
           className="flex flex-col gap-2"
         >
@@ -109,7 +112,52 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
               )}
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant={"destructive"}
+              onClick={() => {
+                // delete confirmation
+                if (confirm("Czy na pewno chcesz usunąć przedmiot?")) {
+                  axios
+                    .delete(`/api/subject`, {
+                      data: { id: subject.id },
+                    })
+                    .then(() => {
+                      toast({
+                        title: "Sukces!",
+                        description: "Pomyślnie usunięto przedmiot.",
+                        variant: "default",
+                      });
+                      router.push("/dashboard?tab=subjects");
+                      startTransition(() => {
+                        router.refresh();
+                      });
+                    })
+                    .catch((err) => {
+                      if (err instanceof AxiosError) {
+                        if (err.response?.data.error === "SubjectNotFound") {
+                          return toast({
+                            title: "Nie można usunąć przedmiotu.",
+                            description:
+                              "Przedmiot który chcesz usunąć, nie istnieje.",
+                            variant: "destructive",
+                          });
+                        }
+                      }
+
+                      return toast({
+                        title: "Coś poszło nie tak.",
+                        description:
+                          "Wystąpił błąd podczas usuwania przedmiotu. Spróbuj ponownie później.",
+                        variant: "destructive",
+                      });
+                    });
+                }
+              }}
+            >
+              Usuń przedmiot
+            </Button>
             <Button type="submit" isLoading={isLoading}>
               Zapisz zmiany
             </Button>

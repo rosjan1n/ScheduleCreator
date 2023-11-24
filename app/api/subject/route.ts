@@ -3,6 +3,47 @@ import { db } from "@/lib/db";
 import { subjectValidator } from "@/lib/validators/basic";
 import { z } from "zod";
 
+export async function DELETE(req: Request) {
+  try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // check if subject exists
+    const subjectToDelete = await db.subject.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!subjectToDelete) {
+      return new Response(JSON.stringify({ error: "SubjectNotFound" }), {
+        status: 404,
+      });
+    }
+
+    // delete subject
+    await db.subject.delete({
+      where: {
+        id: body.id,
+      },
+    });
+
+    return new Response("Pomyślnie usunięto przedmiot.");
+  } catch {
+    return new Response(
+      "Wystąpił błąd podczas usuwania przedmiotu. Spróbuj ponownie później.",
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
 export async function PATCH(req: Request) {
   try {
     const session = await getAuthSession();
@@ -14,6 +55,7 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { name } = subjectValidator.parse(body);
 
+    // check if subject exists
     const subject = await db.subject.findFirst({
       where: {
         id: body.id,
@@ -21,10 +63,12 @@ export async function PATCH(req: Request) {
     });
 
     if (!subject)
-      return new Response("Edytowany przedmiot nie istnieje.", { status: 404 });
+      return new Response(JSON.stringify({ error: "SubjectNotFound" }), {
+        status: 404,
+      });
 
     if (subject.name === name)
-      return new Response("Niewykryto zmian. Przedmiot nie został edytowany.", {
+      return new Response(JSON.stringify({ error: "NoChangesDetected" }), {
         status: 400,
       });
 
@@ -35,8 +79,8 @@ export async function PATCH(req: Request) {
       },
     });
 
-    if (takenSubject) {
-      return new Response("Przedmiot o takiej nazwie już istnieje.", {
+    if (takenSubject && takenSubject.id !== subject.id) {
+      return new Response(JSON.stringify({ error: "SubjectAlreadyExists" }), {
         status: 409,
       });
     }
@@ -44,7 +88,7 @@ export async function PATCH(req: Request) {
     // update subject
     await db.subject.update({
       where: {
-        id: body.id,
+        id: subject.id,
       },
       data: {
         name,

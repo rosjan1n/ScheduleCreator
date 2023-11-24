@@ -55,7 +55,7 @@ const CreateSubject = () => {
       toast({
         description: "Przedmiot został stworzony.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=subjects");
     },
   });
   return (
@@ -75,7 +75,7 @@ const CreateSubject = () => {
                   <Input size={32} placeholder="Nazwa" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Wprowadź nazwę przedmiotu, nazwa nie może się powtarzać.
+                  Nazwa przedmiotu, który chcesz stworzyć.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

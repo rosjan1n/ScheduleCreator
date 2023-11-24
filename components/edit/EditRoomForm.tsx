@@ -12,10 +12,10 @@ import {
 } from "../ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createRoomValidator } from "@/lib/validators/basic";
+import { roomValidator } from "@/lib/validators/basic";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
-import { Room, Subject } from "@prisma/client";
+import { Room } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
@@ -26,17 +26,17 @@ interface Props {
   room: Room;
 }
 
-type FormData = z.infer<typeof createRoomValidator> & {
+type FormData = z.infer<typeof roomValidator> & {
   id: string;
 };
 
 const EditRoomForm: FC<Props> = ({ room }) => {
   const router = useRouter();
   const form = useForm<FormData>({
-    resolver: zodResolver(createRoomValidator),
+    resolver: zodResolver(roomValidator),
     defaultValues: {
-      name: room.name || undefined,
-      capacity: room.capacity || undefined,
+      name: room.name,
+      capacity: room.capacity,
     },
   });
 
@@ -50,15 +50,21 @@ const EditRoomForm: FC<Props> = ({ room }) => {
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
-        if (err.response?.data.teacherExist) {
-          form.setError("name", {
+        if (err.response?.data.error === "RoomAlreadyExists") {
+          return form.setError("name", {
             message: "Sala o takiej nazwie już istnieje.",
           });
-          return;
-        } else if (err.response?.status === 400) {
+        } else if (err.response?.data.error === "NoChangesDetected") {
           return toast({
             title: "Brak zmian.",
-            description: "Niewykryto zmian. Sala nie została edytowana.",
+            description: "Nie wykryto żadnych zmian w sali.",
+            variant: "destructive",
+          });
+        } else if (err.response?.data.error === "RoomNotFound") {
+          return toast({
+            title: "Sala nie istnieje.",
+            description: "Sala, którą próbujesz edytować nie istnieje.",
+            variant: "destructive",
           });
         }
       }
@@ -72,13 +78,13 @@ const EditRoomForm: FC<Props> = ({ room }) => {
     },
     onSuccess: () => {
       toast({
-        description: "Sala została edytowana.",
+        title: "Sala została zaktualizowana.",
+        description: "Sala została zaktualizowana pomyślnie.",
+        variant: "default",
       });
-      router.push("/dashboard");
+
       startTransition(() => {
-        // Refresh the current route and fetch new data from the server without
-        // losing client-side browser or React state.
-        router.refresh();
+        router.push("/dashboard?tab=rooms");
       });
     },
   });
@@ -88,9 +94,7 @@ const EditRoomForm: FC<Props> = ({ room }) => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((data) => {
-            data.id = room.id;
-
-            editRoom(data);
+            editRoom({ ...data, id: room.id });
           })}
           className="flex flex-col gap-2"
         >
@@ -102,9 +106,16 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                 <FormItem>
                   <FormLabel>Nazwa sali</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nazwa" size={32} {...field} />
+                    <Input
+                      placeholder="Nazwa sali"
+                      size={32}
+                      {...field}
+                      autoFocus
+                    />
                   </FormControl>
-                  <FormDescription>Wprowadź nazwę sali.</FormDescription>
+                  <FormDescription>
+                    Wprowadź nazwę sali, np. "Sala 1".
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -117,23 +128,68 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                   <FormLabel>Pojemność sali</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Pojemność"
-                      type="number"
+                      placeholder="Pojemność sali"
                       size={32}
                       {...field}
+                      type="number"
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź ilość krzesełek w sali (1 krzesło = 1 osoba).
+                    Wprowadź pojemność sali, np. "20".
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant={"destructive"}
+              onClick={() => {
+                // delete confirmation
+                if (confirm("Czy na pewno chcesz usunąć salę lekcyjną?")) {
+                  axios
+                    .delete(`/api/room`, {
+                      data: { id: room.id },
+                    })
+                    .then(() => {
+                      toast({
+                        title: "Sukces!",
+                        description: "Pomyślnie usunięto salę lekcyjną.",
+                        variant: "default",
+                      });
+                      router.push("/dashboard?tab=rooms");
+                      startTransition(() => {
+                        router.refresh();
+                      });
+                    })
+                    .catch((err) => {
+                      if (err instanceof AxiosError) {
+                        if (err.response?.data.error === "RoomNotFound") {
+                          return toast({
+                            title: "Nie można usunąć sali lekcyjnej.",
+                            description:
+                              "Salę którą chcesz usunąć, nie istnieje.",
+                            variant: "destructive",
+                          });
+                        }
+                      }
+
+                      return toast({
+                        title: "Coś poszło nie tak.",
+                        description:
+                          "Wystąpił błąd podczas usuwania sali. Spróbuj ponownie później.",
+                        variant: "destructive",
+                      });
+                    });
+                }
+              }}
+            >
+              Usuń salę
+            </Button>
             <Button type="submit" isLoading={isLoading}>
-              Zapisz zmiany
+              Zapisz
             </Button>
           </div>
         </form>

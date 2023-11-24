@@ -42,7 +42,7 @@ async function ClassSection() {
             <div key={i} className="flex flex-col gap-1">
               <span className="text-sm text-zinc-500">Grupa {i + 1}</span>
               <span className="text-sm truncate">
-                {schoolClass.groups.length > 0
+                {schoolClass.groups[i]
                   ? `${schoolClass.groups[i].amountOfStudents} osób`
                   : "Brak"}
               </span>

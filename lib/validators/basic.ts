@@ -41,16 +41,16 @@ export const classValidator = z.object({
     .number({ required_error: "Ilość osób w klasie jest wymagane." })
     .lte(100, "Liczba osób w klasie nie może być większa niż 100 osób.")
     .gte(1, "Liczba osób w klasie nie może być mniejsza niż 1."),
-  /* TODO: Handle group select */
+  splitGroups: z.coerce.boolean(),
   groups: z
     .object({
       amountOfStudents: z.coerce
         .number({ required_error: "Ilość osób w grupie jest wymagane." })
         .lte(100, "Liczba osób w grupie nie może być większa niż 100 osób.")
-        .gte(1, "Liczba osób w grupie nie może być mniejsza niż 1."),
+        .gte(1, "Liczba osób w grupie nie może być mniejsza niż 1.")
+        .optional(),
     })
-    .array()
-    .optional(),
+    .array(),
 });
 
 export const lessonValidator = z.object({
@@ -72,27 +72,3 @@ export const lessonValidator = z.object({
   classId: z.string({ required_error: "Klasa jest wymagana." }).min(1),
   teacherId: z.string({ required_error: "Nauczyciel jest wymagany." }).min(1),
 });
-
-/* export const createScheduleValidator = z.object({
-  lesson: z
-    .object({
-      dayOfWeek: z.string({
-        required_error: "Dzień tygodnia jest wymagany.",
-      }),
-      lessonHour: z.string({
-        required_error: "Godzina lekcyjna jest wymagana.",
-      }),
-      group: z.string().optional(),
-      roomId: z
-        .string({ required_error: "Sala lekcyjna jest wymagana." })
-        .min(1),
-      subjectId: z
-        .string({ required_error: "Przedmiot jest wymagany." })
-        .min(1),
-      classId: z.string({ required_error: "Klasa jest wymagana." }).min(1),
-      teacherId: z
-        .string({ required_error: "Nauczyciel jest wymagany." })
-        .min(1),
-    })
-    .array(),
-}); */

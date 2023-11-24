@@ -54,9 +54,10 @@ model User {
 model Class {
   id               String  @id @default(cuid())
   name             String
-  mainTeacher      Teacher @relation("mainTeacher", fields: [mainTeacherId], references: [id], onDelete: NoAction)
+  mainTeacher      Teacher @relation("mainTeacher", fields: [mainTeacherId], references: [id], onDelete: Cascade)
   mainTeacherId    String  @unique
   amountOfStudents Int
+  splitGroups      Boolean
   groups           Group[]
 
   lessons Lesson[]
@@ -103,15 +104,15 @@ model Lesson {
   dayOfWeek  Int
   lessonHour Int
 
-  group     Group   @relation(fields: [groupId], references: [id], onDelete: NoAction)
-  groupId   String
-  room      Room    @relation(fields: [roomId], references: [id], onDelete: NoAction)
+  group     Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String?
+  room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId    String
-  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: NoAction)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   subjectId String
   class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
   classId   String
-  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: NoAction)
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   teacherId String
 
   @@index([roomId])

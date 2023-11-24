@@ -1,6 +1,6 @@
 import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { editLessonValidator } from "@/lib/validators/edit";
+import { lessonValidator } from "@/lib/validators/basic";
 import { z } from "zod";
 
 export async function POST(req: Request) {
@@ -12,137 +12,104 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { lessonHour, dayOfWeek, room, teacher, subject, group } =
-      editLessonValidator.parse(body);
+    const {
+      lessonHour,
+      dayOfWeek,
+      roomId,
+      teacherId,
+      subjectId,
+      classId,
+      groupId,
+    } = lessonValidator.parse(body);
 
-    let convertedLessonHour = Number(lessonHour);
-    let convertedDayOfWeek = Number(dayOfWeek);
-    let convertedGroup = Number(group);
-
-    // check if lesson exists if so delete it
-    const lessonExists = await db.lesson.findFirst({
-      where: {
-        lessonHour: convertedLessonHour,
-        dayOfWeek: convertedDayOfWeek + 1,
-        classId: body.classId,
-        group: convertedGroup || undefined,
-      },
+    const expectationsClass = await db.class.findUnique({
+      where: { id: classId },
     });
 
-    // check if the teacher is busy if so return conflict
-    const busyTeacher = await db.lesson.findFirst({
-      where: {
-        dayOfWeek: convertedDayOfWeek + 1,
-        lessonHour: convertedLessonHour,
-        teacherId: teacher,
-        class: {
-          name: {
-            not: {
-              equals: body.cohort.name,
-            },
-          },
-        },
-      },
-    });
-
-    // check if room is busy
-    const busyRoom = await db.lesson.findFirst({
-      where: {
-        dayOfWeek: convertedDayOfWeek + 1,
-        lessonHour: convertedLessonHour,
-        room: {
-          id: room,
-        },
-        class: {
-          name: {
-            not: {
-              equals: body.cohort.name,
-            },
-          },
-        },
-      },
-      include: {
-        class: true,
-      },
-    });
-
-    if (busyRoom) {
-      return new Response(JSON.stringify({ busyRoom }), { status: 409 });
-    }
-
-    // select data of room
-    const foundRoom = await db.room.findFirst({
-      where: {
-        id: room,
-      },
-    });
-
-    if (!group) {
-      // check if group of class is busy
-      const busyGroup = await db.lesson.findFirst({
-        where: {
-          dayOfWeek: convertedDayOfWeek + 1,
-          lessonHour: convertedLessonHour,
-          group: {
-            not: undefined,
-          },
-          class: {
-            name: body.cohort.name,
-          },
-        },
-      });
-      if (busyGroup) {
-        return new Response(JSON.stringify({ busyGroup: true }), {
-          status: 409,
-        });
-      }
-    }
-
-    if (busyTeacher) {
-      return new Response(JSON.stringify({ teacher: true }), {
-        status: 409,
+    if (!expectationsClass) {
+      return new Response(JSON.stringify({ error: "ClassNotFound" }), {
+        status: 404,
       });
     }
 
-    if (foundRoom) {
-      if (group) {
-        if (
-          (convertedGroup === 1 &&
-            foundRoom.capacity < body.cohort.amountOfFirstGroup) ||
-          (convertedGroup === 2 &&
-            foundRoom.capacity < body.cohort.amountOfSecondGroup)
-        ) {
-          return new Response(JSON.stringify({ room: true }), { status: 409 });
-        }
-      } else {
-        if (foundRoom.capacity < body.cohort.amount) {
-          return new Response(JSON.stringify({ room: true }), { status: 409 });
-        }
-      }
+    // get all lessons for this class
+    const classLessons = await db.lesson.findMany({
+      where: { classId },
+    });
+
+    // check if there is no lesson at this time
+    const classLessonExists = classLessons.some(
+      (lesson) =>
+        lesson.lessonHour === lessonHour && lesson.dayOfWeek === dayOfWeek
+    );
+    if (classLessonExists) {
+      return new Response(
+        JSON.stringify({ error: "ClassHaveLessonAtThisTime" }),
+        { status: 409 }
+      );
     }
 
-    if (lessonExists) {
-      await db.lesson.delete({
-        where: {
-          id: lessonExists.id,
-        },
+    // check if students will fit in the room
+    const room = await db.room.findUnique({ where: { id: roomId } });
+    if (!room) {
+      return new Response(JSON.stringify({ error: "RoomNotFound" }), {
+        status: 404,
       });
     }
+    if (room.capacity < expectationsClass.amountOfStudents) {
+      return new Response(
+        JSON.stringify({ error: "RoomIsTooSmallForThisClass" }),
+        { status: 409 }
+      );
+    }
+
+    // get all lessons
+    const lessons = await db.lesson.findMany();
+
+    // check if there is no lesson at this time in this room
+    const lessonInRoomExists = lessons.some(
+      (lesson) =>
+        lesson.lessonHour === lessonHour &&
+        lesson.dayOfWeek === dayOfWeek &&
+        lesson.roomId === roomId
+    );
+    if (lessonInRoomExists) {
+      return new Response(
+        JSON.stringify({ error: "LessonInRoomAlreadyExists" }),
+        { status: 409 }
+      );
+    }
+
+    // check if there is no lesson at this time with this teacher
+    const lessonWithTeacherExists = lessons.some(
+      (lesson) =>
+        lesson.lessonHour === lessonHour &&
+        lesson.dayOfWeek === dayOfWeek &&
+        lesson.teacherId === teacherId
+    );
+    if (lessonWithTeacherExists) {
+      return new Response(
+        JSON.stringify({ error: "LessonWithTeacherAlreadyExists" }),
+        { status: 409 }
+      );
+    }
+
+    console.log(groupId);
 
     // create lesson
     await db.lesson.create({
       data: {
-        lessonHour: convertedLessonHour,
-        dayOfWeek: convertedDayOfWeek + 1,
-        group: convertedGroup || undefined,
-        roomId: room,
-        classId: body.cohort.id,
-        teacherId: teacher,
-        subjectId: subject,
+        lessonHour,
+        dayOfWeek,
+        roomId,
+        teacherId,
+        subjectId,
+        classId,
+        groupId: groupId === "undefined" ? undefined : groupId,
       },
     });
 
-    return new Response("OK");
+    return new Response("Utworzono lekcję.");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response(error.message, { status: 400 });

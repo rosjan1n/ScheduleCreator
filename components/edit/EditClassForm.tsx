@@ -1,7 +1,7 @@
 "use client";
 
 import { ExtendedClass } from "@/types/db";
-import { FC, startTransition, useState } from "react";
+import { FC, startTransition } from "react";
 import {
   Form,
   FormControl,
@@ -41,22 +41,15 @@ type FormData = z.infer<typeof classValidator> & {
 
 const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
   const router = useRouter();
-  const [splitGroups, setGroups] = useState(editedClass.groups.length > 0);
 
   const form = useForm<FormData>({
     resolver: zodResolver(classValidator),
     defaultValues: {
-      name: editedClass.name || undefined,
-      amountOfStudents: editedClass.amountOfStudents || undefined,
-      mainTeacherId: editedClass.mainTeacherId || undefined,
-      groups: [
-        {
-          amountOfStudents: editedClass.groups[0]?.amountOfStudents,
-        },
-        {
-          amountOfStudents: editedClass.groups[1]?.amountOfStudents,
-        },
-      ],
+      name: editedClass.name,
+      amountOfStudents: editedClass.amountOfStudents,
+      mainTeacherId: editedClass.mainTeacherId,
+      groups: editedClass.groups,
+      splitGroups: editedClass.groups.length === 2,
     },
   });
 
@@ -66,6 +59,7 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
       name,
       amountOfStudents,
       mainTeacherId,
+      splitGroups,
       groups,
     }: FormData) => {
       const payload: FormData = {
@@ -73,6 +67,7 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
         name,
         amountOfStudents,
         mainTeacherId,
+        splitGroups,
         groups,
       };
 
@@ -82,15 +77,24 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
-        if (err.response?.data.takenName) {
+        if (err.response?.data.error === "ClassAlreadyExists") {
           return form.setError("name", {
             message: "Podana nazwa klasy jest już zajęta.",
           });
-        } else if (err.response?.status === 400) {
+        } else if (err.response?.data.error === "NoChangesDetected") {
           return toast({
             title: "Brak zmian.",
-            description: "Niewykryto zmian. Klasa nie została edytowana.",
+            description: "Nie wykryto żadnych zmian.",
+            variant: "destructive",
           });
+        } else if (err.response?.data.error === "InvalidGroupStudentsSum") {
+          for (let i = 0; i <= 1; i++) {
+            form.setError(`groups.${i}.amountOfStudents`, {
+              message:
+                "Suma uczniów w grupach musi być równa ilości uczniów w klasie.",
+            });
+          }
+          return;
         }
       }
 
@@ -103,12 +107,13 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
     },
     onSuccess: () => {
       toast({
-        description: "Klasa została edytowana.",
+        title: "Sukces!",
+        description: "Pomyślnie zaktualizowano klasę.",
+        variant: "default",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=classes");
+
       startTransition(() => {
-        // Refresh the current route and fetch new data from the server without
-        // losing client-side browser or React state.
         router.refresh();
       });
     },
@@ -131,13 +136,17 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nazwa klasy</FormLabel>
+                  <FormLabel>Nazwa</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nazwa" size={32} {...field} />
+                    <Input
+                      placeholder="Nazwa"
+                      type="text"
+                      size={32}
+                      {...field}
+                      autoFocus
+                    />
                   </FormControl>
-                  <FormDescription>
-                    Wprowadź nazwę klasy. Nazwa musi być unikalna.
-                  </FormDescription>
+                  <FormDescription>Wprowadź nazwę klasy.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -157,7 +166,7 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź ilość uczniów klasy.
+                    Wprowadź ilość uczniów w klasie.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -195,25 +204,34 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                 </FormItem>
               )}
             />
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Podzielić klasę na 2 grupy?
-              </label>
-              <Select
-                onValueChange={(selectedValue) =>
-                  setGroups(selectedValue === "true")
-                }
-              >
-                <SelectTrigger defaultValue={splitGroups ? "true" : "false"}>
-                  <SelectValue placeholder="Wybierz tak/nie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Tak</SelectItem>
-                  <SelectItem value="false">Nie</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {splitGroups &&
+            <FormField
+              control={form.control}
+              name="splitGroups"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Podziel na grupy</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => {
+                        field.onChange(!field.value);
+
+                        const isChecked = e.target.checked;
+                        isChecked === false
+                          ? form.resetField("groups.0.amountOfStudents")
+                          : null;
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Zaznacz, jeśli chcesz podzielić klasę na dwie grupy.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch().splitGroups === true &&
               Array.from({ length: 2 }, (_, i) => (
                 <FormField
                   key={i}
@@ -221,17 +239,17 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                   name={`groups.${i}.amountOfStudents`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ilość uczniów grupy {i + 1}</FormLabel>
+                      <FormLabel>Grupa {i + 1}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ilość"
+                          placeholder="Grupa"
                           type="number"
                           size={32}
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Wprowadź ilość uczniów grupy.
+                        Wprowadź ilość uczniów grupy {i + 1}.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -239,7 +257,52 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                 />
               ))}
           </div>
-          <div className="flex justify-end">
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant={"destructive"}
+              onClick={() => {
+                // delete confirmation
+                if (confirm("Czy na pewno chcesz usunąć klasę?")) {
+                  axios
+                    .delete(`/api/class`, {
+                      data: { id: editedClass.id },
+                    })
+                    .then(() => {
+                      toast({
+                        title: "Sukces!",
+                        description: "Pomyślnie usunięto klasę.",
+                        variant: "default",
+                      });
+                      router.push("/dashboard?tab=classes");
+                      startTransition(() => {
+                        router.refresh();
+                      });
+                    })
+                    .catch((err) => {
+                      if (err instanceof AxiosError) {
+                        if (err.response?.data.error === "ClassNotFound") {
+                          return toast({
+                            title: "Nie można usunąć klasy.",
+                            description:
+                              "Klasa którą chcesz usunąć, nie istnieje.",
+                            variant: "destructive",
+                          });
+                        }
+                      }
+
+                      return toast({
+                        title: "Coś poszło nie tak.",
+                        description:
+                          "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
+                        variant: "destructive",
+                      });
+                    });
+                }
+              }}
+            >
+              Usuń klasę
+            </Button>
             <Button type="submit" isLoading={isLoading}>
               Zapisz zmiany
             </Button>

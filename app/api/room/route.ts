@@ -3,6 +3,48 @@ import { db } from "@/lib/db";
 import { roomValidator } from "@/lib/validators/basic";
 import { z } from "zod";
 
+export async function DELETE(req: Request) {
+  try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+    console.log(body);
+
+    // check if room exists
+    const roomToDelete = await db.room.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!roomToDelete) {
+      return new Response(JSON.stringify({ error: "RoomNotFound" }), {
+        status: 404,
+      });
+    }
+
+    // delete room
+    await db.room.delete({
+      where: {
+        id: body.id,
+      },
+    });
+
+    return new Response("Pomyślnie usunięto salę lekcyjną.");
+  } catch {
+    return new Response(
+      "Wystąpił błąd podczas usuwania sali. Spróbuj ponownie później.",
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
 export async function PATCH(req: Request) {
   try {
     const session = await getAuthSession();
@@ -21,10 +63,12 @@ export async function PATCH(req: Request) {
     });
 
     if (!room)
-      return new Response("Edytowana sala nie istnieje.", { status: 404 });
+      return new Response(JSON.stringify({ error: "RoomNotFound" }), {
+        status: 404,
+      });
 
     if (room.name === name && room.capacity === capacity)
-      return new Response("Niewykryto zmian. Sala nie została edytowana.", {
+      return new Response(JSON.stringify({ error: "NoChangesDetected" }), {
         status: 400,
       });
 
@@ -35,8 +79,8 @@ export async function PATCH(req: Request) {
       },
     });
 
-    if (takenRoom) {
-      return new Response("Sala o takiej nazwie już istnieje.", {
+    if (takenRoom && takenRoom.id !== body.id) {
+      return new Response(JSON.stringify({ error: "RoomAlreadyExists" }), {
         status: 409,
       });
     }
@@ -52,7 +96,7 @@ export async function PATCH(req: Request) {
       },
     });
 
-    return new Response("OK");
+    return new Response("Pomyślnie edytowano salę lekcyjną.");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response(error.message, { status: 422 });

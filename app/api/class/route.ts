@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { classValidator } from "@/lib/validators/basic";
 import { z } from "zod";
 
-/* export async function DELETE(req: Request) {
+export async function DELETE(req: Request) {
   try {
     const session = await getAuthSession();
 
@@ -13,25 +13,27 @@ import { z } from "zod";
 
     const body = await req.json();
 
-    const group = await db.class.findFirst({
+    // check if class exists
+    const classToDelete = await db.class.findFirst({
       where: {
-        id: body.classId,
+        id: body.id,
       },
     });
 
-    if (!group) {
-      return new Response("Klasa którą chcesz usunąć nie istnieje.", {
+    if (!classToDelete) {
+      return new Response(JSON.stringify({ error: "ClassNotFound" }), {
         status: 404,
       });
     }
 
+    // delete class
     await db.class.delete({
       where: {
-        id: body.classId,
+        id: body.id,
       },
     });
 
-    return new Response("OK");
+    return new Response("Pomyślnie usunięto klasę.");
   } catch {
     return new Response(
       "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
@@ -40,9 +42,9 @@ import { z } from "zod";
       }
     );
   }
-} */
+}
 
-/* export async function PATCH(req: Request) {
+export async function PATCH(req: Request) {
   try {
     const session = await getAuthSession();
 
@@ -51,94 +53,138 @@ import { z } from "zod";
     }
 
     const body = await req.json();
-    const {
-      name,
-      amount,
-      mainTeacherId,
-      isGroup,
-      amountOfFirstGroup,
-      amountOfSecondGroup,
-    } = classValidator.parse(body);
+    const { name, mainTeacherId, amountOfStudents, splitGroups, groups } =
+      classValidator.parse(body);
 
-    const group = await db.class.findFirst({
+    const classToUpdate = await db.class.findFirst({
       where: {
         id: body.id,
       },
+      include: {
+        groups: true,
+      },
     });
 
-    if (!group) {
-      return new Response("Edytowana klasa nie istnieje.", { status: 404 });
+    if (!classToUpdate) {
+      return new Response(JSON.stringify({ error: "ClassNotFound" }), {
+        status: 404,
+      });
     }
 
     if (
-      group.name === name &&
-      group.amount === amount &&
-      group.mainTeacherId === mainTeacherId &&
-      group.isGroup === checkIsGroup(isGroup) &&
-      group.amountOfFirstGroup === (amountOfFirstGroup || null) &&
-      group.amountOfSecondGroup === (amountOfSecondGroup || null)
+      classToUpdate.name === name &&
+      classToUpdate.mainTeacherId === mainTeacherId &&
+      classToUpdate.amountOfStudents === amountOfStudents &&
+      classToUpdate.splitGroups === splitGroups &&
+      classToUpdate.groups[0]?.amountOfStudents ===
+        groups[0]?.amountOfStudents &&
+      classToUpdate.groups[1]?.amountOfStudents === groups[1]?.amountOfStudents
     ) {
-      return new Response("Niewykryto zmian. Klasa nie została edytowana.", {
+      return new Response(JSON.stringify({ error: "NoChangesDetected" }), {
         status: 400,
       });
     }
 
-    // check if this class name already exist
+    // check if class name already exists
     const takenName = await db.class.findFirst({
       where: {
         name,
-        NOT: {
-          id: {
-            equals: body.id,
-          },
-        },
       },
     });
 
-    if (takenName)
-      return new Response(
-        JSON.stringify({
-          takenName: true,
-        }),
-        { status: 409 }
-      );
+    if (takenName && takenName.id !== body.id) {
+      return new Response(JSON.stringify({ error: "ClassAlreadyExists" }), {
+        status: 409,
+      });
+    }
 
-    if (checkIsGroup(isGroup)) {
+    // check if class is split
+    if (splitGroups) {
       if (
-        amountOfFirstGroup === undefined ||
-        amountOfSecondGroup === undefined
+        groups[0].amountOfStudents !== undefined &&
+        groups[1].amountOfStudents !== undefined
       ) {
+        if (
+          groups[0].amountOfStudents + groups[1].amountOfStudents !==
+          amountOfStudents
+        ) {
+          return new Response(
+            JSON.stringify({ error: "InvalidGroupStudentsSum" }),
+            { status: 409 }
+          );
+        }
+
+        // update class with groups
+        await db.class.update({
+          where: {
+            id: body.id,
+          },
+          data: {
+            name,
+            mainTeacherId,
+            amountOfStudents,
+            splitGroups,
+          },
+        });
+
+        const groupsToUpdate = await db.group.findMany({
+          where: {
+            classId: body.id,
+          },
+        });
+
+        if (groupsToUpdate.length === 0) {
+          groups.forEach(async (group) => {
+            await db.group.create({
+              data: {
+                amountOfStudents: group.amountOfStudents!,
+                classId: body.id,
+              },
+            });
+          });
+        } else {
+          groupsToUpdate.forEach(async (group, index) => {
+            await db.group.update({
+              where: {
+                id: group.id,
+              },
+              data: {
+                amountOfStudents: groups[index].amountOfStudents,
+              },
+            });
+          });
+        }
+
+        return new Response("Pomyślnie edytowano klasę z grupami.");
+      } else {
         return new Response(
-          JSON.stringify({
-            amountOfGroupNotSpecified: true,
-          }),
+          JSON.stringify({ error: "GroupStudentsRequired" }),
           { status: 409 }
         );
-      } else if (
-        amountOfFirstGroup + amountOfSecondGroup > amount ||
-        amountOfFirstGroup + amountOfSecondGroup < amount
-      ) {
-        return new Response(JSON.stringify({ amountOfGroups: true }), {
-          status: 409,
-        });
       }
     }
 
+    // update class
     await db.class.update({
       where: {
         id: body.id,
       },
       data: {
         name,
-        amount,
         mainTeacherId,
-        isGroup: checkIsGroup(isGroup),
-        amountOfFirstGroup: checkIsGroup(isGroup) ? amountOfFirstGroup : null,
-        amountOfSecondGroup: checkIsGroup(isGroup) ? amountOfSecondGroup : null,
+        amountOfStudents,
+        splitGroups,
       },
     });
 
-    return new Response("OK");
+    // delete groups if class is not split
+    await db.group.deleteMany({
+      where: {
+        classId: body.id,
+      },
+    });
+
+    return new Response("Pomyślnie edytowano klasę.");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response(error.message, { status: 422 });
@@ -151,7 +197,7 @@ import { z } from "zod";
       }
     );
   }
-} */
+}
 
 export async function POST(req: Request) {
   try {
@@ -162,7 +208,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, mainTeacherId, amountOfStudents, groups } =
+    const { name, mainTeacherId, amountOfStudents, splitGroups, groups } =
       classValidator.parse(body);
 
     // check if class name already exists
@@ -175,43 +221,55 @@ export async function POST(req: Request) {
     if (takenName)
       return new Response(
         JSON.stringify({
-          takenName: true,
+          error: "ClassAlreadyExists",
         }),
         { status: 409 }
       );
 
-    if (groups && groups.length > 0) {
+    // check if class is split
+    if (splitGroups) {
       if (
-        groups[0].amountOfStudents + groups[1].amountOfStudents !==
-        amountOfStudents
+        groups[0].amountOfStudents !== undefined &&
+        groups[1].amountOfStudents !== undefined
       ) {
-        return new Response(
-          JSON.stringify({ invalidStudentsAmountGroup: true }),
-          {
-            status: 409,
-          }
-        );
-      }
+        if (
+          groups[0].amountOfStudents + groups[1].amountOfStudents !==
+          amountOfStudents
+        ) {
+          return new Response(
+            JSON.stringify({ error: "InvalidGroupStudentsSum" }),
+            {
+              status: 409,
+            }
+          );
+        }
 
-      // create class
-      const createdClass = await db.class.create({
-        data: {
-          name,
-          mainTeacherId,
-          amountOfStudents,
-        },
-      });
-
-      groups.forEach(async (group) => {
-        await db.group.create({
+        // create class
+        const createdClass = await db.class.create({
           data: {
-            amountOfStudents: group.amountOfStudents,
-            classId: createdClass.id,
+            name,
+            mainTeacherId,
+            amountOfStudents,
+            splitGroups,
           },
         });
-      });
 
-      return new Response("Stworzono klasę wraz z grupami.");
+        groups.forEach(async (group) => {
+          await db.group.create({
+            data: {
+              amountOfStudents: group.amountOfStudents!,
+              classId: createdClass.id,
+            },
+          });
+        });
+
+        return new Response("Stworzono klasę z grupami.");
+      } else {
+        return new Response(
+          JSON.stringify({ error: "GroupStudentsRequired" }),
+          { status: 409 }
+        );
+      }
     }
 
     // create class
@@ -220,6 +278,7 @@ export async function POST(req: Request) {
         name,
         mainTeacherId,
         amountOfStudents,
+        splitGroups,
       },
     });
 

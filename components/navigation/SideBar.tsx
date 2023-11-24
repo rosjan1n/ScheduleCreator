@@ -20,7 +20,7 @@ const SideBar = ({ isLogged }: Props) => {
         <ul className="space-y-2 font-medium">
           <li>
             <Link
-              href={"/dashboard"}
+              href={"/dashboard?tab=classes"}
               className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-muted/50 group"
             >
               <Tv2 className="w-5 h-5" />
@@ -29,7 +29,7 @@ const SideBar = ({ isLogged }: Props) => {
           </li>
           <li>
             <Link
-              href={"/forms"}
+              href={"/forms?tab=class"}
               className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-muted/50 group"
             >
               <CalendarPlus className="w-5 h-5" />

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export default async function Login() {
   const session = await getAuthSession();
 
-  if (session) redirect("/dashboard");
+  if (session) redirect("/dashboard?tab=classes");
 
   return (
     <div className="h-full max-w-2xl m-auto flex flex-col items-center justify-center gap-20">

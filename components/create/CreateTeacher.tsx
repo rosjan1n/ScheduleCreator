@@ -60,7 +60,7 @@ const CreateTeacher = () => {
       toast({
         description: "Nauczyciel został stworzony.",
       });
-      router.push("/dashboard");
+      router.push("/dashboard?tab=teachers");
       startTransition(() => {
         router.refresh();
       });
@@ -73,19 +73,18 @@ const CreateTeacher = () => {
           onSubmit={form.handleSubmit((data) => createTeacher(data))}
           className="flex flex-col gap-2"
         >
-          <div className="flex flex-col xl:flex-row gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="sm:w-[400px]">
+                <FormItem>
                   <FormLabel>Imię nauczyciela</FormLabel>
                   <FormControl>
                     <Input size={32} placeholder="Imię" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Dane nauczyciela nie mogą się powtarzać z innym utworzonym
-                    nauczycielem.
+                    Wprowadź imię nauczyciela, imię nie może się powtarzać.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -95,14 +94,14 @@ const CreateTeacher = () => {
               control={form.control}
               name="surname"
               render={({ field }) => (
-                <FormItem className="sm:w-[400px]">
+                <FormItem>
                   <FormLabel>Nazwisko nauczyciela</FormLabel>
                   <FormControl>
                     <Input size={32} placeholder="Nazwisko" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Dane nauczyciela nie mogą się powtarzać z innym utworzonym
-                    nauczycielem.
+                    Wprowadź nazwisko nauczyciela, nazwisko nie może się
+                    powtarzać.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

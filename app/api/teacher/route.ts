@@ -3,6 +3,47 @@ import { db } from "@/lib/db";
 import { teacherValidator } from "@/lib/validators/basic";
 import { z } from "zod";
 
+export async function DELETE(req: Request) {
+  try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // check if teacher exists
+    const teacherToDelete = await db.teacher.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!teacherToDelete) {
+      return new Response(JSON.stringify({ error: "TeacherNotFound" }), {
+        status: 404,
+      });
+    }
+
+    // delete teacher
+    await db.teacher.delete({
+      where: {
+        id: body.id,
+      },
+    });
+
+    return new Response("Pomyślnie usunięto nauczyciela.");
+  } catch {
+    return new Response(
+      "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
 export async function PATCH(req: Request) {
   try {
     const session = await getAuthSession();

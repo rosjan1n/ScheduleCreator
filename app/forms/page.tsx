@@ -4,7 +4,6 @@ import CreateRoom from "@/components/create/CreateRoom";
 import CreateSubject from "@/components/create/CreateSubject";
 import CreateTeacher from "@/components/create/CreateTeacher";
 import { buttonVariants } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";

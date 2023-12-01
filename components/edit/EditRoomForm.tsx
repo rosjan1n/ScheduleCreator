@@ -114,7 +114,7 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź nazwę sali, np. "Sala 1".
+                    Wprowadź nazwę sali, np. Sala 1.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -135,7 +135,7 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Wprowadź pojemność sali, np. "20".
+                    Wprowadź pojemność sali, np. 20.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

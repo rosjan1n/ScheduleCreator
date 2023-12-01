@@ -138,6 +138,7 @@ export async function PATCH(req: Request) {
             await db.group.create({
               data: {
                 amountOfStudents: group.amountOfStudents!,
+                name: group.name!,
                 classId: body.id,
               },
             });
@@ -150,6 +151,7 @@ export async function PATCH(req: Request) {
               },
               data: {
                 amountOfStudents: groups[index].amountOfStudents,
+                name: groups[index].name,
               },
             });
           });
@@ -230,7 +232,9 @@ export async function POST(req: Request) {
     if (splitGroups) {
       if (
         groups[0].amountOfStudents !== undefined &&
-        groups[1].amountOfStudents !== undefined
+        groups[0].name !== undefined &&
+        groups[1].amountOfStudents !== undefined &&
+        groups[1].name !== undefined
       ) {
         if (
           groups[0].amountOfStudents + groups[1].amountOfStudents !==
@@ -258,6 +262,7 @@ export async function POST(req: Request) {
           await db.group.create({
             data: {
               amountOfStudents: group.amountOfStudents!,
+              name: group.name!,
               classId: createdClass.id,
             },
           });

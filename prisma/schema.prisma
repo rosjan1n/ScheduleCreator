@@ -66,6 +66,7 @@ model Class {
 model Group {
   id               String @id @default(cuid())
   amountOfStudents Int
+  name             String
 
   Class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
   classId String

@@ -27,7 +27,7 @@ import axios, { AxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Teacher } from "@prisma/client";
-import { FC, startTransition, useState } from "react";
+import { FC, startTransition } from "react";
 
 interface Props {
   teachers: Teacher[];
@@ -62,15 +62,25 @@ const CreateClass: FC<Props> = ({ teachers }) => {
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
-        if (err.response?.data.takenName) {
+        if (err.response?.data.error === "ClassAlreadyExists") {
           return form.setError("name", {
             message: "Podana nazwa klasy jest już zajęta.",
           });
-        } else if (err.response?.data.invalidStudentsAmountGroup) {
+        } else if (err.response?.data.error === "InvalidGroupStudentsSum") {
           for (let i = 0; i <= 1; i++) {
             form.setError(`groups.${i}.amountOfStudents`, {
               message:
                 "Suma ilości uczniów obu grup, nie zgadza się z liczbą uczniów całej klasy.",
+            });
+          }
+          return;
+        } else if (err.response?.data.error === "GroupStudentsRequired") {
+          for (let i = 0; i < 2; i++) {
+            form.setError(`groups.${i}.amountOfStudents`, {
+              message: "Podaj ilość uczniów w grupie.",
+            });
+            form.setError(`groups.${i}.name`, {
+              message: "Podaj nazwę grupy.",
             });
           }
           return;
@@ -200,29 +210,52 @@ const CreateClass: FC<Props> = ({ teachers }) => {
               )}
             />
             {form.watch().splitGroups === true &&
-              Array.from({ length: 2 }, (_, i) => (
-                <FormField
-                  key={i}
-                  control={form.control}
-                  name={`groups.${i}.amountOfStudents`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grupa {i + 1}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Grupa"
-                          type="number"
-                          size={32}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Wprowadź ilość uczniów grupy {i + 1}.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              Array.from({ length: 2 }, (v, i) => (
+                <>
+                  <FormField
+                    key={`name-${i}`}
+                    control={form.control}
+                    name={`groups.${i}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grupa {i + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nazwa grupy"
+                            size={32}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Wprowadź nazwę grupy {i + 1}.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    key={`amountOfStudents-${i}`}
+                    control={form.control}
+                    name={`groups.${i}.amountOfStudents`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grupa {i + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ilość uczniów"
+                            type="number"
+                            size={32}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Wprowadź ilość uczniów grupy {i + 1}.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               ))}
           </div>
           <div className="flex justify-end">

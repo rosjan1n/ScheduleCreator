@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { buttonVariants } from "../ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "../ui/skeleton";
 import Loader from "../Loader";
 
 async function TeacherSection() {

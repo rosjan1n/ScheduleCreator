@@ -12,4 +12,6 @@ export type ExtendedLesson = Lesson & {
   room: Room;
   subject: Subject;
   teacher: Teacher;
+  class: Class;
+  group: Group | null;
 };

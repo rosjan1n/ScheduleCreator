@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import LessonList from "@/components/list/LessonList";
 
 type Param = string | string[] | undefined;
 
@@ -26,20 +27,17 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
 
   if (!tab) redirect("/dashboard?tab=classes");
 
-  function convertTabToTitle(tab: string) {
-    switch (tab) {
-      case "classes":
-        return "klas";
-      case "teachers":
-        return "nauczycieli";
-      case "subjects":
-        return "przedmiotów";
-      case "rooms":
-        return "sal";
-      default:
-        return "";
-    }
-  }
+  const classes = await db.class.findMany();
+
+  const lessons = await db.lesson.findMany({
+    include: {
+      teacher: true,
+      subject: true,
+      room: true,
+      class: true,
+      group: true,
+    },
+  });
 
   return (
     <div className="m-6">
@@ -73,18 +71,22 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
             >
               Sale
             </Link>
+            <Link
+              className={buttonVariants({ variant: "outline" })}
+              href="/dashboard?tab=lessons"
+            >
+              Lekcje
+            </Link>
           </div>
         </div>
         <hr />
-        <div className="flex flex-col gap-2">
-          <span className="font-semibold text-xl">
-            Lista {convertTabToTitle(tab)}
-          </span>
-          {tab === "classes" && <ClassList />}
-          {tab === "teachers" && <TeacherList />}
-          {tab === "subjects" && <SubjectList />}
-          {tab === "rooms" && <RoomList />}
-        </div>
+        {tab === "classes" && <ClassList />}
+        {tab === "teachers" && <TeacherList />}
+        {tab === "subjects" && <SubjectList />}
+        {tab === "rooms" && <RoomList />}
+        {tab === "lessons" && (
+          <LessonList lessons={lessons} classes={classes} />
+        )}
       </div>
     </div>
   );

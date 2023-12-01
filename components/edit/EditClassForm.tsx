@@ -233,28 +233,51 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
             />
             {form.watch().splitGroups === true &&
               Array.from({ length: 2 }, (_, i) => (
-                <FormField
-                  key={i}
-                  control={form.control}
-                  name={`groups.${i}.amountOfStudents`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grupa {i + 1}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Grupa"
-                          type="number"
-                          size={32}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Wprowadź ilość uczniów grupy {i + 1}.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <>
+                  <FormField
+                    key={i}
+                    control={form.control}
+                    name={`groups.${i}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grupa {i + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nazwa grupy"
+                            size={32}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Wprowadź nazwę grupy {i + 1}.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    key={i}
+                    control={form.control}
+                    name={`groups.${i}.amountOfStudents`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grupa {i + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ilość uczniów"
+                            type="number"
+                            size={32}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Wprowadź ilość uczniów grupy {i + 1}.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
               ))}
           </div>
           <div className="flex gap-2 justify-end">

@@ -44,6 +44,11 @@ export const classValidator = z.object({
   splitGroups: z.coerce.boolean(),
   groups: z
     .object({
+      name: z.coerce
+        .string({ required_error: "Nazwa grupy jest wymagana." })
+        .min(1, "Nazwa grupy nie może być krótsza niż 1 znak.")
+        .max(10, "Nazwa grupy nie może być dłuższa niż 10 znaków.")
+        .optional(),
       amountOfStudents: z.coerce
         .number({ required_error: "Ilość osób w grupie jest wymagane." })
         .lte(100, "Liczba osób w grupie nie może być większa niż 100 osób.")

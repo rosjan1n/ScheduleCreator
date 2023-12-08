@@ -1,15 +1,17 @@
 "use client";
 
 import { CalendarPlus, LogOut, Tv2 } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 import "flowbite";
+import UserAccountNav from "../UserAccountNav";
+import { User } from "next-auth";
+import { buttonVariants } from "../ui/button";
 
-interface Props {
-  isLogged: boolean;
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  user: Pick<User, "name" | "image" | "email"> | undefined;
 }
 
-const SideBar = ({ isLogged }: Props) => {
+const SideBar = ({ user }: Props) => {
   return (
     <aside
       id="logo-sidebar"
@@ -18,8 +20,8 @@ const SideBar = ({ isLogged }: Props) => {
       aria-hidden="true"
     >
       <div className="h-full px-3 pb-4 overflow-y-auto">
-        <ul className="space-y-2 font-medium">
-          <li>
+        <div className="flex flex-col justify-between h-full font-medium">
+          <div className="flex flex-col gap-2">
             <Link
               href={"/dashboard?tab=classes"}
               className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-muted/50 group"
@@ -27,8 +29,6 @@ const SideBar = ({ isLogged }: Props) => {
               <Tv2 className="w-5 h-5" />
               <span className="ml-3">Panel</span>
             </Link>
-          </li>
-          <li>
             <Link
               href={"/forms?tab=class"}
               className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-muted/50 group"
@@ -36,24 +36,15 @@ const SideBar = ({ isLogged }: Props) => {
               <CalendarPlus className="w-5 h-5" />
               <span className="ml-3">Formularze</span>
             </Link>
-          </li>
-          {isLogged && (
-            <li>
-              <div
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-muted/50 hover:cursor-pointer group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  signOut({
-                    callbackUrl: `${window.location.origin}/`,
-                  });
-                }}
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="ml-3">Wyloguj się</span>
-              </div>
-            </li>
+          </div>
+          {user ? (
+            <UserAccountNav user={user} />
+          ) : (
+            <Link href={"/"} className={buttonVariants()}>
+              Zaloguj się
+            </Link>
           )}
-        </ul>
+        </div>
       </div>
     </aside>
   );

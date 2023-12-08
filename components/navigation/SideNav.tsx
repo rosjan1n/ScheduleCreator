@@ -1,7 +1,6 @@
 import { getAuthSession } from "@/lib/auth";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
-import UserAccountNav from "../UserAccountNav";
 import SideBar from "./SideBar";
 import ToggleTheme from "../theme/ToggleTheme";
 
@@ -44,14 +43,6 @@ const SideNav = async () => {
             </div>
             <div className="flex items-center">
               <div className="flex items-center gap-4 ml-3">
-                {session?.user ? (
-                  <UserAccountNav user={session.user} />
-                ) : (
-                  <Link href={"/"} className={buttonVariants()}>
-                    Zaloguj się
-                  </Link>
-                )}
-
                 <ToggleTheme />
               </div>
             </div>
@@ -59,7 +50,7 @@ const SideNav = async () => {
         </div>
       </nav>
 
-      <SideBar isLogged={session?.user ? true : false} />
+      <SideBar user={session?.user} />
     </>
   );
 };

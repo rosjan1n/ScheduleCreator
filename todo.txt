@@ -1,3 +1,0 @@
-Usuwanie i edytowanie konkretnej lekcji w panelu lekcji
-Usuwanie wszystkich lekcji z danego dnia jednym kliknięciem
-Usuwanie wszystkich lekcji z całego tygodnia jednym kliknięciem

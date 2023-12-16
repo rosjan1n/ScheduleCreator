@@ -1,14 +1,14 @@
 "use client";
 
-import { CalendarPlus, LogOut, Tv2 } from "lucide-react";
+import { CalendarPlus, Tv2 } from "lucide-react";
 import Link from "next/link";
 import "flowbite";
-import UserAccountNav from "../UserAccountNav";
+import UserAccountNav from "./UserAccountNav";
 import { User } from "next-auth";
 import { buttonVariants } from "../ui/button";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
-  user: Pick<User, "name" | "image" | "email"> | undefined;
+  user: Pick<User, "name" | "image"> | undefined;
 }
 
 const SideBar = ({ user }: Props) => {

@@ -2,6 +2,8 @@ import { getAuthSession } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import EditClassForm from "@/components/edit/EditClassForm";
+import { Button } from "@/components/ui/button";
+import { Undo2 } from "lucide-react";
 
 interface pageProps {
   params: {
@@ -38,12 +40,12 @@ const page = async ({ params }: pageProps) => {
 
   return (
     <div className="m-6">
-      <header className="flex flex-col gap-10">
+      <div className="flex flex-col gap-6">
         <span id="page-title" className="font-semibold text-3xl">
           Edytowanie klasy {foundedClass.name}
         </span>
         <EditClassForm editedClass={foundedClass} freeTeachers={freeTeachers} />
-      </header>
+      </div>
     </div>
   );
 };

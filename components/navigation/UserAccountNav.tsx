@@ -7,10 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { UserAvatar } from "./UserAvatar";
+} from "../ui/dropdown-menu";
+import { UserAvatar } from "../UserAvatar";
 import { LogOut, MoreHorizontal } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { signOut } from "next-auth/react";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {

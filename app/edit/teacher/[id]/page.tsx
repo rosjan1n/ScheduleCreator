@@ -24,12 +24,12 @@ const page = async ({ params }: pageProps) => {
 
   return (
     <div className="m-6">
-      <header className="flex flex-col gap-10">
+      <div className="flex flex-col gap-6">
         <span id="page-title" className="font-semibold text-3xl">
           Edytowanie nauczyciela {teacher.name} {teacher.surname}
         </span>
         <EditTeacherForm teacher={teacher} />
-      </header>
+      </div>
     </div>
   );
 };

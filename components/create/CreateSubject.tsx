@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 type formData = z.infer<typeof subjectValidator>;
@@ -44,17 +44,13 @@ const CreateSubject = () => {
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description:
           "Przedmiot nie został stworzony. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Przedmiot został stworzony.",
-      });
+      toast.success("Przedmiot został stworzony.");
       router.push("/dashboard?tab=subjects");
     },
   });

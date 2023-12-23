@@ -10,7 +10,6 @@ import {
 } from "../ui/dropdown-menu";
 import { UserAvatar } from "../UserAvatar";
 import { LogOut, MoreHorizontal } from "lucide-react";
-import { Button } from "../ui/button";
 import { signOut } from "next-auth/react";
 
 interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -43,6 +42,7 @@ export function UserAccountNav({ user }: UserAccountNavProps) {
               });
             }}
           >
+            <LogOut className="mr-2 h-4 w-4" />
             Wyloguj się
           </DropdownMenuItem>
         </DropdownMenuContent>

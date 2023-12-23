@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { lessonValidator } from "@/lib/validators/basic";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Class, Group, Room, Subject, Teacher } from "@prisma/client";
@@ -105,16 +105,12 @@ const CreateLesson = ({
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description: "Lekcja nie została stworzona. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Lekcja została stworzona.",
-      });
+      toast.success("Lekcja została stworzona.");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
         // re-rendering the whole page

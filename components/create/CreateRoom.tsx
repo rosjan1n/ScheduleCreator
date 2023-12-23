@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { startTransition } from "react";
 
@@ -45,16 +45,12 @@ const CreateRoom = () => {
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description: "Sala nie została stworzona. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Sala została stworzona.",
-      });
+      toast.success("Sala została stworzona.");
       router.push("/dashboard?tab=rooms");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without

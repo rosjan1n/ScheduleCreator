@@ -1,7 +1,11 @@
 import { db } from "@/lib/db";
 import TeacherSection from "./TeacherSection";
 
-async function TeacherList() {
+interface Props {
+  tab: string;
+}
+
+async function TeacherList({ tab }: Props) {
   const teachers = await db.teacher.findMany({
     include: {
       assignedClass: true,
@@ -12,7 +16,7 @@ async function TeacherList() {
     },
   });
 
-  return <TeacherSection teachers={teachers} />;
+  return <TeacherSection tab={tab} teachers={teachers} />;
 }
 
 export default TeacherList;

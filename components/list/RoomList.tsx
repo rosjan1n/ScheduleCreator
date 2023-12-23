@@ -1,7 +1,11 @@
 import { db } from "@/lib/db";
 import RoomSection from "./RoomSection";
 
-async function RoomList() {
+interface Props {
+  tab: string;
+}
+
+async function RoomList({ tab }: Props) {
   const rooms = await db.room.findMany({
     include: {
       lessons: true,
@@ -11,7 +15,7 @@ async function RoomList() {
     },
   });
 
-  return <RoomSection rooms={rooms} />;
+  return <RoomSection tab={tab} rooms={rooms} />;
 }
 
 export default RoomList;

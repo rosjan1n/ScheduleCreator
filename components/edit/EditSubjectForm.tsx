@@ -19,7 +19,7 @@ import { Subject } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -54,30 +54,23 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
             message: "Przedmiot o takiej nazwie już istnieje.",
           });
         } else if (err.response?.data.error === "NoChangesDetected") {
-          return toast({
-            title: "Brak zmian.",
+          return toast.info("Brak zmian.", {
             description: "Niewykryto zmian. Przedmiot nie został edytowany.",
           });
         } else if (err.response?.data.error === "SubjectNotFound") {
-          return toast({
-            title: "Przedmiot nie istnieje.",
-            description: "Przedmiot, który próbujesz edytować nie istnieje.",
-            variant: "destructive",
-          });
+          return toast.info(
+            "Przedmiot, który próbujesz edytować nie istnieje."
+          );
         }
 
-        return toast({
-          title: "Coś poszło nie tak.",
+        return toast.error("Coś poszło nie tak.", {
           description:
             "Wystąpił błąd podczas edycji przedmiotu. Spróbuj ponownie później.",
-          variant: "destructive",
         });
       }
     },
     onSuccess: () => {
-      toast({
-        description: "Przedmiot został edytowany.",
-      });
+      toast.success("Przedmiot został edytowany.");
       router.push("/dashboard?tab=subjects");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
@@ -124,11 +117,7 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
                       data: { id: subject.id },
                     })
                     .then(() => {
-                      toast({
-                        title: "Sukces!",
-                        description: "Pomyślnie usunięto przedmiot.",
-                        variant: "default",
-                      });
+                      toast.success("Pomyślnie usunięto przedmiot.");
                       router.push("/dashboard?tab=subjects");
                       startTransition(() => {
                         router.refresh();
@@ -137,20 +126,15 @@ const EditSubjectForm: FC<Props> = ({ subject }) => {
                     .catch((err) => {
                       if (err instanceof AxiosError) {
                         if (err.response?.data.error === "SubjectNotFound") {
-                          return toast({
-                            title: "Nie można usunąć przedmiotu.",
-                            description:
-                              "Przedmiot który chcesz usunąć, nie istnieje.",
-                            variant: "destructive",
-                          });
+                          return toast.info(
+                            "Przedmiot który chcesz usunąć, nie istnieje."
+                          );
                         }
                       }
 
-                      return toast({
-                        title: "Coś poszło nie tak.",
+                      return toast.error("Coś poszło nie tak.", {
                         description:
                           "Wystąpił błąd podczas usuwania przedmiotu. Spróbuj ponownie później.",
-                        variant: "destructive",
                       });
                     });
                 }

@@ -15,13 +15,15 @@ import moment from "moment";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { Users } from "lucide-react";
+import SelectBookmark from "../dashboard/SelectBookmark";
 
 type Props = {
   lessons: ExtendedLesson[];
   classes: Class[];
+  tab: string;
 };
 
-const LessonList: FC<Props> = ({ lessons, classes }) => {
+const LessonList: FC<Props> = ({ lessons, classes, tab }) => {
   const [selectedClass, setSelectedClass] = useState<string>("");
 
   const classLessons = lessons.filter(
@@ -30,27 +32,30 @@ const LessonList: FC<Props> = ({ lessons, classes }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2 items-center">
-        <Users className="w-5 h-5" />
-        <Select
-          defaultValue={selectedClass}
-          onValueChange={(value) => setSelectedClass(value)}
-        >
-          <SelectTrigger className="w-fit">
-            <SelectValue placeholder="Wybierz klasę" />
-          </SelectTrigger>
-          <SelectContent>
-            {classes.map((_class) => (
-              <SelectItem key={_class.id} value={_class.id}>
-                {_class.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+        <SelectBookmark currentTab={tab} />
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5" />
+          <Select
+            defaultValue={selectedClass}
+            onValueChange={(value) => setSelectedClass(value)}
+          >
+            <SelectTrigger className="w-fit">
+              <SelectValue placeholder="Wybierz klasę" />
+            </SelectTrigger>
+            <SelectContent>
+              {classes.map((_class) => (
+                <SelectItem key={_class.id} value={_class.id}>
+                  {_class.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       {selectedClass !== "" ? (
         classLessons.length > 0 ? (
-          <div className="grid grid-cols-1 2xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 2xl:grid-cols-5 gap-4 mt-6">
             {["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"].map(
               (day, index) => {
                 const lessonsForDay = classLessons
@@ -106,7 +111,7 @@ const LessonList: FC<Props> = ({ lessons, classes }) => {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 mt-10">
+          <div className="flex flex-col items-center gap-2 mt-6">
             <span className="font-semibold text-lg text-center">
               Brak planu lekcji dla wybranej klasy
             </span>
@@ -119,7 +124,7 @@ const LessonList: FC<Props> = ({ lessons, classes }) => {
           </div>
         )
       ) : (
-        <span className="font-semibold text-lg text-center mt-10">
+        <span className="font-semibold text-lg text-center mt-6">
           Aby wyświetlić plan lekcji, wybierz klasę
         </span>
       )}

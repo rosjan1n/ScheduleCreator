@@ -6,9 +6,11 @@ import { getAuthSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import LessonList from "@/components/list/LessonList";
-import SelectBookmark from "@/components/dashboard/SelectBookmark";
 import { Suspense } from "react";
 import Loader from "@/components/Loader";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 type Param = string | string[] | undefined;
 
@@ -42,35 +44,64 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
   return (
     <div className="m-6">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row items-center justify-between mb-2">
+        <div className="flex flex-row items-center justify-between">
           <span id="page-title" className="font-semibold text-3xl">
             Panel
           </span>
-          <SelectBookmark currentTab={tab} />
+          <Link
+            href={`/forms?tab=${
+              tab === "classes"
+                ? "class"
+                : tab === "teachers"
+                ? "teacher"
+                : tab === "rooms"
+                ? "room"
+                : tab === "subjects"
+                ? "subject"
+                : tab === "lessons"
+                ? "lesson"
+                : null
+            }`}
+            className={buttonVariants({ variant: "default" })}
+          >
+            <Plus className="mr-2 w-5 h-5" /> Stwórz{" "}
+            {tab === "classes"
+              ? "klasę"
+              : tab === "teachers"
+              ? "nauczyciela"
+              : tab === "rooms"
+              ? "salę"
+              : tab === "subjects"
+              ? "przedmiot"
+              : tab === "lessons"
+              ? "lekcję"
+              : null}
+          </Link>
         </div>
+        <hr />
         {tab === "classes" && (
           <Suspense fallback={<Loader />}>
-            <ClassList />
+            <ClassList tab={tab} />
           </Suspense>
         )}
         {tab === "teachers" && (
           <Suspense fallback={<Loader />}>
-            <TeacherList />
+            <TeacherList tab={tab} />
           </Suspense>
         )}
         {tab === "rooms" && (
           <Suspense fallback={<Loader />}>
-            <RoomList />
+            <RoomList tab={tab} />
           </Suspense>
         )}
         {tab === "subjects" && (
           <Suspense fallback={<Loader />}>
-            <SubjectList />
+            <SubjectList tab={tab} />
           </Suspense>
         )}
         {tab === "lessons" && (
           <Suspense fallback={<Loader />}>
-            <LessonList lessons={lessons} classes={classes} />
+            <LessonList tab={tab} lessons={lessons} classes={classes} />
           </Suspense>
         )}
       </div>

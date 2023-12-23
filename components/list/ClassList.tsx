@@ -3,7 +3,11 @@ import ClassSection from "./ClassSection";
 import { Suspense } from "react";
 import Loader from "../Loader";
 
-const ClassList = async () => {
+interface Props {
+  tab: string;
+}
+
+const ClassList = async ({ tab }: Props) => {
   const classes = await db.class.findMany({
     include: {
       mainTeacher: true,
@@ -17,7 +21,7 @@ const ClassList = async () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      <ClassSection classes={classes} />
+      <ClassSection tab={tab} classes={classes} />
     </Suspense>
   );
 };

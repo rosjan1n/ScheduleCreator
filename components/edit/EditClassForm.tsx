@@ -27,7 +27,7 @@ import { Teacher } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -82,10 +82,8 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
             message: "Podana nazwa klasy jest już zajęta.",
           });
         } else if (err.response?.data.error === "NoChangesDetected") {
-          return toast({
-            title: "Brak zmian.",
+          return toast.info("Brak zmian.", {
             description: "Nie wykryto żadnych zmian.",
-            variant: "destructive",
           });
         } else if (err.response?.data.error === "InvalidGroupStudentsSum") {
           for (let i = 0; i <= 1; i++) {
@@ -98,19 +96,13 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description:
           "Wystąpił błąd podczas edycji klasy. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Sukces!",
-        description: "Pomyślnie zaktualizowano klasę.",
-        variant: "default",
-      });
+      toast.success("Pomyślnie zaktualizowano klasę.");
       router.push("/dashboard?tab=classes");
 
       startTransition(() => {
@@ -292,11 +284,7 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                       data: { id: editedClass.id },
                     })
                     .then(() => {
-                      toast({
-                        title: "Sukces!",
-                        description: "Pomyślnie usunięto klasę.",
-                        variant: "default",
-                      });
+                      toast.success("Pomyślnie usunięto klasę.");
                       router.push("/dashboard?tab=classes");
                       startTransition(() => {
                         router.refresh();
@@ -305,20 +293,15 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
                     .catch((err) => {
                       if (err instanceof AxiosError) {
                         if (err.response?.data.error === "ClassNotFound") {
-                          return toast({
-                            title: "Nie można usunąć klasy.",
-                            description:
-                              "Klasa którą chcesz usunąć, nie istnieje.",
-                            variant: "destructive",
-                          });
+                          return toast.info(
+                            "Klasa którą chcesz usunąć, nie istnieje."
+                          );
                         }
                       }
 
-                      return toast({
-                        title: "Coś poszło nie tak.",
+                      return toast.error("Coś poszło nie tak.", {
                         description:
                           "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
-                        variant: "destructive",
                       });
                     });
                 }

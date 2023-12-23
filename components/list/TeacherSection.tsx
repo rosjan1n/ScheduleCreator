@@ -7,12 +7,14 @@ import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { ExtendedTeacher } from "@/types/db";
+import SelectBookmark from "../dashboard/SelectBookmark";
 
 interface TeacherSectionProps {
   teachers: ExtendedTeacher[];
+  tab: string;
 }
 
-const TeacherSection: FC<TeacherSectionProps> = ({ teachers }) => {
+const TeacherSection: FC<TeacherSectionProps> = ({ teachers, tab }) => {
   const [wantedTeacher, setWantedTeacher] = useState<string>("");
 
   if (teachers.length === 0)
@@ -35,18 +37,21 @@ const TeacherSection: FC<TeacherSectionProps> = ({ teachers }) => {
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-2">
-        <Search className="w-5 h-5" />
-        <Input
-          className="w-fit"
-          type="search"
-          placeholder="Wyszukaj nauczyciela"
-          value={wantedTeacher}
-          onChange={(e) => setWantedTeacher(e.target.value)}
-        />
+      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+        <SelectBookmark currentTab={tab} />
+        <div className="flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          <Input
+            className="w-fit"
+            type="search"
+            placeholder="Wyszukaj nauczyciela"
+            value={wantedTeacher}
+            onChange={(e) => setWantedTeacher(e.target.value)}
+          />
+        </div>
       </div>
       <div className="rounded bg-muted p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filteredTeachers.length > 0 ? (
             filteredTeachers.map((teacher) => (
               <div

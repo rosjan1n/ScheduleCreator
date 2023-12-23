@@ -19,7 +19,7 @@ import { Room } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -55,33 +55,21 @@ const EditRoomForm: FC<Props> = ({ room }) => {
             message: "Sala o takiej nazwie już istnieje.",
           });
         } else if (err.response?.data.error === "NoChangesDetected") {
-          return toast({
-            title: "Brak zmian.",
+          return toast.info("Brak zmian.", {
             description: "Nie wykryto żadnych zmian w sali.",
-            variant: "destructive",
           });
         } else if (err.response?.data.error === "RoomNotFound") {
-          return toast({
-            title: "Sala nie istnieje.",
-            description: "Sala, którą próbujesz edytować nie istnieje.",
-            variant: "destructive",
-          });
+          return toast.info("Sala, którą próbujesz edytować nie istnieje.");
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description:
           "Wystąpił błąd podczas edycji sali. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Sala została zaktualizowana.",
-        description: "Sala została zaktualizowana pomyślnie.",
-        variant: "default",
-      });
+      toast.success("Sala została zaktualizowana pomyślnie.");
 
       startTransition(() => {
         router.push("/dashboard?tab=rooms");
@@ -154,11 +142,7 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                       data: { id: room.id },
                     })
                     .then(() => {
-                      toast({
-                        title: "Sukces!",
-                        description: "Pomyślnie usunięto salę lekcyjną.",
-                        variant: "default",
-                      });
+                      toast.success("Pomyślnie usunięto salę lekcyjną.");
                       router.push("/dashboard?tab=rooms");
                       startTransition(() => {
                         router.refresh();
@@ -167,20 +151,15 @@ const EditRoomForm: FC<Props> = ({ room }) => {
                     .catch((err) => {
                       if (err instanceof AxiosError) {
                         if (err.response?.data.error === "RoomNotFound") {
-                          return toast({
-                            title: "Nie można usunąć sali lekcyjnej.",
-                            description:
-                              "Salę którą chcesz usunąć, nie istnieje.",
-                            variant: "destructive",
-                          });
+                          return toast.info(
+                            "Salę którą chcesz usunąć, nie istnieje."
+                          );
                         }
                       }
 
-                      return toast({
-                        title: "Coś poszło nie tak.",
+                      return toast.error("Coś poszło nie tak.", {
                         description:
                           "Wystąpił błąd podczas usuwania sali. Spróbuj ponownie później.",
-                        variant: "destructive",
                       });
                     });
                 }

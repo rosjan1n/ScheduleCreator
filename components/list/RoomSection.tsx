@@ -7,12 +7,14 @@ import { Input } from "../ui/input";
 import Link from "next/link";
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
+import SelectBookmark from "../dashboard/SelectBookmark";
 
 interface RoomSectionProps {
   rooms: ExtendedRoom[];
+  tab: string;
 }
 
-const RoomSection: FC<RoomSectionProps> = ({ rooms }) => {
+const RoomSection: FC<RoomSectionProps> = ({ rooms, tab }) => {
   const [wantedRoom, setWantedRoom] = useState<string>("");
 
   const filteredRooms = rooms.filter((room) =>
@@ -20,18 +22,21 @@ const RoomSection: FC<RoomSectionProps> = ({ rooms }) => {
   );
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Search className="w-5 h-5" />
-        <Input
-          className="w-fit"
-          type="search"
-          placeholder="Wyszukaj salę"
-          value={wantedRoom}
-          onChange={(e) => setWantedRoom(e.target.value)}
-        />
+      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+        <SelectBookmark currentTab={tab} />
+        <div className="flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          <Input
+            className="w-fit"
+            type="search"
+            placeholder="Wyszukaj salę"
+            value={wantedRoom}
+            onChange={(e) => setWantedRoom(e.target.value)}
+          />
+        </div>
       </div>
       <div className="rounded bg-muted p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filteredRooms.length > 0 ? (
             filteredRooms.map((room) => (
               <div

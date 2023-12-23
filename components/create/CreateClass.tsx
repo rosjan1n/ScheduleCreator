@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Teacher } from "@prisma/client";
 import { FC, startTransition } from "react";
@@ -87,17 +87,13 @@ const CreateClass: FC<Props> = ({ teachers }) => {
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description:
           "Wystąpił błąd podczas tworzenia klasy. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Klasa została stworzona.",
-      });
+      toast.success("Klasa została stworzona.");
       router.push("/dashboard?tab=classes");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without

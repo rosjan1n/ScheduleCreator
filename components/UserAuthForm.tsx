@@ -3,13 +3,12 @@ import { cn } from "@/lib/utils";
 import { FC, useState } from "react";
 import { Button } from "./ui/button";
 import { signIn } from "next-auth/react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Icons } from "./Icons";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const UserAuthForm: FC<UserAuthFormProps> = ({ className, ...props }) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const loginWithGoogle = async () => {
@@ -18,11 +17,7 @@ const UserAuthForm: FC<UserAuthFormProps> = ({ className, ...props }) => {
     try {
       await signIn("google");
     } catch (error) {
-      toast({
-        title: "Wystąpił błąd.",
-        description: "Wystąpił błąd z logowaniem Google.",
-        variant: "destructive",
-      });
+      toast.error("Wystąpił błąd z logowaniem Google.");
     } finally {
       setIsLoading(false);
     }

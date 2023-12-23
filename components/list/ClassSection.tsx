@@ -7,12 +7,14 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 import { buttonVariants } from "../ui/button";
+import SelectBookmark from "../dashboard/SelectBookmark";
 
 interface ClassSectionProps {
   classes: ExtendedClass[];
+  tab: string;
 }
 
-const ClassSection: FC<ClassSectionProps> = ({ classes }) => {
+const ClassSection: FC<ClassSectionProps> = ({ classes, tab }) => {
   const [wantedClass, setWantedClass] = useState<string>("");
   if (classes.length === 0)
     return (
@@ -32,18 +34,21 @@ const ClassSection: FC<ClassSectionProps> = ({ classes }) => {
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Search className="w-5 h-5" />
-        <Input
-          className="w-fit"
-          type="search"
-          placeholder="Wyszukaj klasę"
-          value={wantedClass}
-          onChange={(e) => setWantedClass(e.target.value)}
-        />
+      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+        <SelectBookmark currentTab={tab} />
+        <div className="flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          <Input
+            className="w-fit"
+            type="search"
+            placeholder="Wyszukaj klasę"
+            value={wantedClass}
+            onChange={(e) => setWantedClass(e.target.value)}
+          />
+        </div>
       </div>
       <div className="rounded bg-muted p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filteredClasses.length > 0 ? (
             filteredClasses.map((schoolClass) => (
               <div

@@ -19,7 +19,7 @@ import { Teacher } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -59,24 +59,19 @@ const EditTeacherForm: FC<Props> = ({ teacher }) => {
           });
           return;
         } else if (err.response?.status === 400) {
-          return toast({
-            title: "Brak zmian.",
+          return toast.info("Brak zmian.", {
             description: "Niewykryto zmian. Nauczyciel nie został edytowany.",
           });
         }
       }
 
-      return toast({
-        title: "Coś poszło nie tak.",
+      return toast.error("Coś poszło nie tak.", {
         description:
           "Wystąpił błąd podczas edycji nauczyciela. Spróbuj ponownie później.",
-        variant: "destructive",
       });
     },
     onSuccess: () => {
-      toast({
-        description: "Nauczyciel został edytowany.",
-      });
+      toast.success("Nauczyciel został edytowany.");
       router.push("/dashboard?tab=teachers");
       startTransition(() => {
         // Refresh the current route and fetch new data from the server without
@@ -145,11 +140,7 @@ const EditTeacherForm: FC<Props> = ({ teacher }) => {
                       data: { id: teacher.id },
                     })
                     .then(() => {
-                      toast({
-                        title: "Sukces!",
-                        description: "Pomyślnie usunięto nauczyciela.",
-                        variant: "default",
-                      });
+                      toast.success("Pomyślnie usunięto nauczyciela.");
                       router.push("/dashboard?tab=teachers");
                       startTransition(() => {
                         router.refresh();
@@ -158,20 +149,15 @@ const EditTeacherForm: FC<Props> = ({ teacher }) => {
                     .catch((err) => {
                       if (err instanceof AxiosError) {
                         if (err.response?.data.error === "TeacherNotFound") {
-                          return toast({
-                            title: "Nie można usunąć nauczyciela.",
-                            description:
-                              "Nauczyciel którego chcesz usunąć, nie istnieje.",
-                            variant: "destructive",
-                          });
+                          return toast.info(
+                            "Nauczyciel którego chcesz usunąć, nie istnieje."
+                          );
                         }
                       }
 
-                      return toast({
-                        title: "Coś poszło nie tak.",
+                      return toast.error("Coś poszło nie tak.", {
                         description:
                           "Wystąpił błąd podczas usuwania nauczyciela. Spróbuj ponownie później.",
-                        variant: "destructive",
                       });
                     });
                 }

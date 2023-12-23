@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils";
 import { Calendar, Search, Settings2 } from "lucide-react";
 import { ExtentedSubject } from "@/types/db";
 import { Input } from "../ui/input";
+import SelectBookmark from "../dashboard/SelectBookmark";
 
 interface SubjectSectionProps {
   subjects: ExtentedSubject[];
+  tab: string;
 }
 
-const SubjectSection: FC<SubjectSectionProps> = ({ subjects }) => {
+const SubjectSection: FC<SubjectSectionProps> = ({ subjects, tab }) => {
   const [wantedSubject, setWantedSubject] = useState<string>("");
 
   const filteredSubjects = subjects.filter((subject) =>
@@ -21,18 +23,21 @@ const SubjectSection: FC<SubjectSectionProps> = ({ subjects }) => {
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <Search className="w-5 h-5" />
-        <Input
-          className="w-fit"
-          type="search"
-          placeholder="Wyszukaj przedmiot"
-          value={wantedSubject}
-          onChange={(e) => setWantedSubject(e.target.value)}
-        />
+      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+        <SelectBookmark currentTab={tab} />
+        <div className="flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          <Input
+            className="w-fit"
+            type="search"
+            placeholder="Wyszukaj przedmiot"
+            value={wantedSubject}
+            onChange={(e) => setWantedSubject(e.target.value)}
+          />
+        </div>
       </div>
       <div className="rounded bg-muted p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filteredSubjects.length > 0 ? (
             filteredSubjects.map((subject) => (
               <div

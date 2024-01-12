@@ -8,8 +8,8 @@ import { db } from "@/lib/db";
 import LessonList from "@/components/list/LessonList";
 import { Suspense } from "react";
 import Loader from "@/components/Loader";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
 
 type Param = string | string[] | undefined;
@@ -64,7 +64,7 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
             }`}
             className={buttonVariants({ variant: "default" })}
           >
-            <Plus className="mr-2 w-5 h-5" /> Stwórz{" "}
+            <PlusCircleIcon className="mr-2 w-5 h-5" /> Stwórz{" "}
             {tab === "classes"
               ? "klasę"
               : tab === "teachers"

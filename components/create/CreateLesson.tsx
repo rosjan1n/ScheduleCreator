@@ -133,13 +133,13 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Klasa</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz klasę"
-                        />
+                        <SelectValue placeholder="Wybierz klasę" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -163,13 +163,13 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nauczyciel</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz nauczyciela"
-                        />
+                        <SelectValue placeholder="Wybierz nauczyciela" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -193,13 +193,13 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sala</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz salę"
-                        />
+                        <SelectValue placeholder="Wybierz salę" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -223,13 +223,13 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Przedmiot</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz przedmiot"
-                        />
+                        <SelectValue placeholder="Wybierz przedmiot" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -253,13 +253,13 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dzień tygodnia</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={`${field.value}`}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz dzień tygodnia"
-                        />
+                        <SelectValue placeholder="Wybierz dzień tygodnia" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -283,19 +283,19 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Numer lekcji</FormLabel>
-                  <Select onValueChange={field.onChange}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={`${field.value}`}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="Wybierz numer lekcji"
-                        />
+                        <SelectValue placeholder="Wybierz numer lekcji" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {Array.from({ length: 15 }, (_, i) => (
                         <SelectItem key={`lesson-${i}`} value={`${i}`}>
-                          {i}
+                          {i === 0 ? "0" : i}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -316,13 +316,13 @@ const CreateLesson = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grupa</FormLabel>
-                    <Select onValueChange={field.onChange}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue
-                            defaultValue={field.value}
-                            placeholder="Wybierz grupę"
-                          />
+                          <SelectValue placeholder="Wybierz grupę" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

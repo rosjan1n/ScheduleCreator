@@ -13,9 +13,10 @@ import { Class } from "@prisma/client";
 import { cn, lessonList } from "@/lib/utils";
 import moment from "moment";
 import Link from "next/link";
-import { buttonVariants } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Users } from "lucide-react";
 import SelectBookmark from "../dashboard/SelectBookmark";
+import EditLessonForm from "../edit/EditLessonForm";
 
 type Props = {
   lessons: ExtendedLesson[];
@@ -32,7 +33,7 @@ const LessonList: FC<Props> = ({ lessons, classes, tab }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+      <div className="gap-2 flex md:space-y-0 md:gap-0 md:justify-between mb-2">
         <SelectBookmark currentTab={tab} />
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5" />
@@ -57,32 +58,42 @@ const LessonList: FC<Props> = ({ lessons, classes, tab }) => {
         classLessons.length > 0 ? (
           <div className="grid grid-cols-1 2xl:grid-cols-5 gap-4 mt-6">
             {["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"].map(
-              (day, index) => {
+              (day, dayIndex) => {
                 const lessonsForDay = classLessons
-                  .filter((lesson) => lesson.dayOfWeek === index + 1)
+                  .filter((lesson) => lesson.dayOfWeek === dayIndex + 1)
                   .sort((a, b) => a.lessonHour - b.lessonHour);
 
                 return (
-                  <div key={`${day}-${index}`} className="flex flex-col gap-2">
+                  <div
+                    key={`${day}-${dayIndex}`}
+                    className="flex flex-col gap-2"
+                  >
                     <span className="font-semibold text-lg text-center">
                       {day}
                     </span>
                     {lessonsForDay.length > 0 ? (
                       lessonsForDay.map((lesson, index) => (
                         <div
-                          className="flex flex-col rounded-md p-2 bg-muted gap-2"
+                          className="flex flex-col rounded-md p-4 bg-muted gap-2"
                           key={`${lesson.id}-${index}`}
                         >
-                          <div className="flex flex-col">
-                            <span className="font-semibold">
-                              {moment(
-                                lessonList[lesson.lessonHour].startDate
-                              ).format("HH:mm")}{" "}
-                              -{" "}
-                              {moment(
-                                lessonList[lesson.lessonHour].endDate
-                              ).format("HH:mm")}
-                            </span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold">
+                                {moment(
+                                  lessonList[lesson.lessonHour].startDate
+                                ).format("HH:mm")}{" "}
+                                -{" "}
+                                {moment(
+                                  lessonList[lesson.lessonHour].endDate
+                                ).format("HH:mm")}
+                              </span>
+
+                              <EditLessonForm
+                                lesson={lesson}
+                                day={dayIndex + 1}
+                              />
+                            </div>
                             <span className="font-semibold text-lg">
                               {lesson.subject.name}
                             </span>

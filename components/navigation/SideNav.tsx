@@ -1,6 +1,5 @@
 import { getAuthSession } from "@/lib/auth";
 import Link from "next/link";
-import { buttonVariants } from "../ui/button";
 import SideBar from "./SideBar";
 import ToggleTheme from "../theme/ToggleTheme";
 

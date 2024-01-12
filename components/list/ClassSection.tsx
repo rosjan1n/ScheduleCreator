@@ -34,7 +34,7 @@ const ClassSection: FC<ClassSectionProps> = ({ classes, tab }) => {
 
   return (
     <>
-      <div className="space-y-2 gap-2 md:flex md:space-y-0 md:gap-0 md:justify-between mb-2">
+      <div className="gap-2 flex md:space-y-0 md:gap-0 md:justify-between mb-2">
         <SelectBookmark currentTab={tab} />
         <div className="flex items-center gap-2">
           <Search className="w-5 h-5" />

@@ -94,8 +94,6 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log(groupId);
-
     // create lesson
     await db.lesson.create({
       data: {
@@ -118,6 +116,135 @@ export async function POST(req: Request) {
     return new Response(
       "Nie można stworzyć lekcji. Spróbuj ponownie później.",
       { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+    const {
+      lessonHour,
+      dayOfWeek,
+      roomId,
+      teacherId,
+      subjectId,
+      classId,
+      groupId,
+    } = lessonValidator.parse(body);
+
+    const lesson = await db.lesson.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!lesson)
+      return new Response(JSON.stringify({ error: "LessonNotFound" }), {
+        status: 404,
+      });
+
+    if (
+      lesson.classId === classId &&
+      lesson.dayOfWeek === dayOfWeek &&
+      ((lesson.groupId === null && groupId === "undefined") ||
+        lesson.groupId === groupId) &&
+      lesson.lessonHour === lessonHour &&
+      lesson.roomId === roomId &&
+      lesson.subjectId === subjectId &&
+      lesson.teacherId === teacherId
+    )
+      return new Response(JSON.stringify({ error: "NoChangesDetected" }), {
+        status: 400,
+      });
+
+    // check if room is already taken
+    const takenRoom = await db.lesson.findFirst({
+      where: {
+        dayOfWeek,
+        lessonHour,
+        roomId,
+      },
+    });
+
+    if (takenRoom && takenRoom.id !== body.id) {
+      return new Response(JSON.stringify({ error: "RoomAlreadyTaken" }), {
+        status: 409,
+      });
+    }
+
+    // edit lesson
+    await db.lesson.update({
+      where: {
+        id: body.id,
+      },
+      data: {
+        lessonHour,
+        dayOfWeek,
+        roomId,
+        teacherId,
+        subjectId,
+        classId,
+        groupId,
+      },
+    });
+
+    return new Response("Pomyślnie edytowano lekcje.");
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return new Response(error.message, { status: 422 });
+    }
+
+    return new Response(
+      "Wystąpił błąd podczas edycji lekcji. Spróbuj ponownie później.",
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getAuthSession();
+
+    if (!session?.user) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // check if lesson exists
+    const lessonToDelete = await db.lesson.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!lessonToDelete) {
+      return new Response(JSON.stringify({ error: "LessonNotFound" }), {
+        status: 404,
+      });
+    }
+
+    // delete lesson
+    await db.lesson.delete({
+      where: {
+        id: body.id,
+      },
+    });
+
+    return new Response("Pomyślnie usunięto lekcję.");
+  } catch {
+    return new Response(
+      "Wystąpił błąd podczas usuwania lekcji. Spróbuj ponownie później.",
+      {
+        status: 500,
+      }
     );
   }
 }

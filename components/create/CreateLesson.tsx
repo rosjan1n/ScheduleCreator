@@ -48,6 +48,9 @@ const CreateLesson = ({
   const router = useRouter();
   const form = useForm<formData>({
     resolver: zodResolver(lessonValidator),
+    defaultValues: {
+      groupId: "undefined",
+    },
   });
 
   const { mutate: createLesson, isLoading } = useMutation({
@@ -253,21 +256,24 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Dzień tygodnia</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={`${field.value}`}
-                  >
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Wybierz dzień tygodnia" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="1">Poniedziałek</SelectItem>
-                      <SelectItem value="2">Wtorek</SelectItem>
-                      <SelectItem value="3">Środa</SelectItem>
-                      <SelectItem value="4">Czwartek</SelectItem>
-                      <SelectItem value="5">Piątek</SelectItem>
+                      {[
+                        "Poniedziałek",
+                        "Wtorek",
+                        "Środa",
+                        "Czwartek",
+                        "Piątek",
+                      ].map((value, index) => (
+                        <SelectItem key={index} value={`${index + 1}`}>
+                          {value}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>
@@ -283,10 +289,7 @@ const CreateLesson = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Numer lekcji</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={`${field.value}`}
-                  >
+                  <Select onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Wybierz numer lekcji" />
@@ -331,9 +334,9 @@ const CreateLesson = ({
                           .filter(
                             (group) => group.classId === form.watch("classId")
                           )
-                          .map((group, index) => (
+                          .map((group) => (
                             <SelectItem key={group.id} value={group.id}>
-                              Grupa {index + 1}
+                              Grupa {group.name}
                             </SelectItem>
                           ))}
                       </SelectContent>

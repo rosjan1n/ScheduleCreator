@@ -30,17 +30,6 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
 
   if (!tab) redirect("/dashboard?tab=classes");
 
-  const classes = await db.class.findMany();
-  const lessons = await db.lesson.findMany({
-    include: {
-      teacher: true,
-      subject: true,
-      room: true,
-      class: true,
-      group: true,
-    },
-  });
-
   return (
     <div className="m-6">
       <div className="flex flex-col gap-4">
@@ -101,7 +90,7 @@ const DashboardPage = async ({ searchParams }: DashoardPageProps) => {
         )}
         {tab === "lessons" && (
           <Suspense fallback={<Loader />}>
-            <LessonList tab={tab} lessons={lessons} classes={classes} />
+            <LessonList tab={tab} />
           </Suspense>
         )}
       </div>

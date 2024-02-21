@@ -40,7 +40,9 @@ export async function POST(req: Request) {
     // check if there is no lesson at this time
     const classLessonExists = classLessons.some(
       (lesson) =>
-        lesson.lessonHour === lessonHour && lesson.dayOfWeek === dayOfWeek
+        lesson.lessonHour === lessonHour &&
+        lesson.dayOfWeek === dayOfWeek &&
+        lesson.groupId === groupId
     );
     if (classLessonExists) {
       return new Response(

@@ -19,6 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { startTransition } from "react";
 
 type formData = z.infer<typeof subjectValidator>;
 
@@ -52,6 +53,9 @@ const CreateSubject = () => {
     onSuccess: () => {
       toast.success("Przedmiot został stworzony.");
       router.push("/dashboard?tab=subjects");
+      startTransition(() => {
+        router.refresh();
+      });
     },
   });
   return (

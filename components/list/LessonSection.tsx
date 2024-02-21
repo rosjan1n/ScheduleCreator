@@ -93,6 +93,7 @@ const LessonSection: FC<Props> = ({
                             <div className="flex items-center justify-between">
                               <div className="flex flex-col">
                                 <span className="font-semibold">
+                                  {lesson.lessonHour}.{" "}
                                   {moment(
                                     lessonList[lesson.lessonHour].startDate
                                   ).format("HH:mm")}{" "}
@@ -113,7 +114,6 @@ const LessonSection: FC<Props> = ({
 
                               <EditLessonForm
                                 lesson={lesson}
-                                day={dayIndex + 1}
                                 allClasses={allClasses}
                                 allGroups={allGroups}
                                 allRooms={allRooms}

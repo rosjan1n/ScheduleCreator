@@ -56,7 +56,7 @@ const TeacherSection: FC<TeacherSectionProps> = ({ teachers, tab }) => {
             filteredTeachers.map((teacher) => (
               <div
                 key={teacher.id}
-                className="flex flex-col justify-between bg-white dark:bg-background shadow-sm rounded p-4 transition ease-out duration-300 hover:scale-105"
+                className="flex flex-col justify-between bg-white dark:bg-background shadow-sm rounded p-4"
               >
                 <div id="header" className="flex items-center justify-between">
                   <span id="class-name" className="font-semibold text-lg">

@@ -23,6 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Teacher } from "@prisma/client";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
@@ -273,42 +284,53 @@ const EditClassForm: FC<Props> = ({ editedClass, freeTeachers }) => {
               ))}
           </div>
           <div className="flex gap-2 justify-end">
-            <Button
-              type="button"
-              variant={"destructive"}
-              onClick={() => {
-                // delete confirmation
-                if (confirm("Czy na pewno chcesz usunąć klasę?")) {
-                  axios
-                    .delete(`/api/class`, {
-                      data: { id: editedClass.id },
-                    })
-                    .then(() => {
-                      toast.success("Pomyślnie usunięto klasę.");
-                      router.push("/dashboard?tab=classes");
-                      startTransition(() => {
-                        router.refresh();
-                      });
-                    })
-                    .catch((err) => {
-                      if (err instanceof AxiosError) {
-                        if (err.response?.data.error === "ClassNotFound") {
-                          return toast.info(
-                            "Klasa którą chcesz usunąć, nie istnieje."
-                          );
-                        }
-                      }
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant={"destructive"}>
+                  Usuń klasę
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Czy jesteś tego pewien?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie
+                    klasy z naszych serwerów.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Anuluj</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      try {
+                        await axios.delete(`/api/class`, {
+                          data: { id: editedClass.id },
+                        });
 
-                      return toast.error("Coś poszło nie tak.", {
-                        description:
-                          "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
-                      });
-                    });
-                }
-              }}
-            >
-              Usuń klasę
-            </Button>
+                        toast.success("Pomyślnie usunięto klasę.");
+                        router.push("/dashboard");
+                        router.refresh();
+                      } catch (err) {
+                        if (err instanceof AxiosError) {
+                          if (err.response?.data.error === "ClassNotFound") {
+                            return toast.info(
+                              "Klasa którą chcesz usunąć, nie istnieje."
+                            );
+                          }
+                        }
+
+                        return toast.error("Coś poszło nie tak.", {
+                          description:
+                            "Wystąpił błąd podczas usuwania klasy. Spróbuj ponownie później.",
+                        });
+                      }
+                    }}
+                  >
+                    Usuń
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button type="submit" isLoading={isLoading}>
               Zapisz zmiany
             </Button>

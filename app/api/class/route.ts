@@ -1,6 +1,7 @@
 import { getAuthSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classValidator } from "@/lib/validators/basic";
+import { Group } from "@prisma/client";
 import { z } from "zod";
 
 export async function DELETE(req: Request) {
@@ -144,7 +145,7 @@ export async function PATCH(req: Request) {
             });
           });
         } else {
-          groupsToUpdate.forEach(async (group, index) => {
+          groupsToUpdate.forEach(async (group: Group, index) => {
             await db.group.update({
               where: {
                 id: group.id,
